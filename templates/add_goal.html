@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Adicionar Meta - Gestor Financeiro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-light">
+        <h2 class="card-title mb-0">Adicionar Nova Meta</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="goal_name" id="goal_name" required>
+                        <label for="goal_name">Nome da Meta</label>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="target_date" id="target_date" 
+                               placeholder="DD/MM/AAAA" required pattern="\d{2}/\d{2}/\d{4}">
+                        <label for="target_date">Data Limite</label>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="number" step="0.01" class="form-control" name="target_amount" id="target_amount" required>
+                        <label for="target_amount">Valor Alvo (R$)</label>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="number" step="0.01" class="form-control" name="current_amount" id="current_amount" value="0">
+                        <label for="current_amount">Valor Atual (R$)</label>
+                    </div>
+                </div>
+                
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-success me-2">
+                        <i class="fas fa-save me-1"></i> Salvar Meta
+                    </button>
+                    <a href="{{ url_for('goals') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Cancelar
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Máscara para data
+document.getElementById('target_date').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2);
+    }
+    if (value.length > 5) {
+        value = value.substring(0, 5) + '/' + value.substring(5, 9);
+    }
+    e.target.value = value;
+});
+</script>
+{% endblock %}
+{% endblock %}

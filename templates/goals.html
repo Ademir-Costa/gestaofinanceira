@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}Metas Financeiras - Gestor Financeiro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h2 class="card-title mb-0">Metas Financeiras</h2>
+        <button class="btn btn-primary" onclick="showGoalForm()">
+            <i class="fas fa-plus me-1"></i> Nova Meta
+        </button>
+    </div>
+
+    <!-- Formulário para adicionar nova meta (inicialmente oculto) -->
+    <div class="card-body" id="goalForm" style="display: none;">
+        <form method="POST" action="{{ url_for('add_goal_route') }}" class="row g-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="goal_name" id="goal_name" required>
+                    <label for="goal_name">Nome da Meta</label>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="target_date" id="target_date" 
+                           placeholder="DD/MM/AAAA" required pattern="\d{2}/\d{2}/\d{4}">
+                    <label for="target_date">Data Limite</label>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="number" step="0.01" class="form-control" name="target_amount" id="target_amount" required>
+                    <label for="target_amount">Valor Alvo (R$)</label>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="number" step="0.01" class="form-control" name="current_amount" id="current_amount" value="0">
+                    <label for="current_amount">Valor Atual (R$)</label>
+                </div>
+            </div>
+            
+            <div class="col-12">
+                <button type="submit" class="btn btn-success me-2">
+                    <i class="fas fa-save me-1"></i> Salvar Meta
+                </button>
+                <button type="button" class="btn btn-outline-secondary" onclick="hideGoalForm()">
+                    <i class="fas fa-times me-1"></i> Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Metas - Versão Corrigida -->
+    <div class="card-body">
+        <div class="row mt-3">
+            {% if goals %}
+                {% for goal in goals %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">{{ goal.name }}</h5>
+                            <span class="badge bg-{% if goal.is_completed %}success{% else %}{% if goal.is_behind %}danger{% else %}warning{% endif %}{% endif %}">
+                                {% if goal.is_completed %}Concluída{% else %}{{ "%.1f"|format(goal.progress_percentage) }}%{% endif %}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Arrecadado:</span>
+                                <strong>R$ {{ "%.2f"|format(goal.current_amount) }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Meta:</span>
+                                <strong>R$ {{ "%.2f"|format(goal.target_amount) }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Data alvo:</span>
+                                <strong>
+                                    {% if goal.target_date %}
+                                        {% if goal.target_date is string %}
+                                            {{ goal.target_date }}
+                                        {% else %}
+                                            {{ goal.target_date.strftime('%d/%m/%Y') }}
+                                        {% endif %}
+                                    {% else %}
+                                        Data não definida
+                                    {% endif %}
+                                </strong>
+                            </div>
+
+                            <!-- Barra de progresso -->
+                            <div class="progress mb-3" style="height: 20px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ goal.progress_percentage }}%" 
+                                     aria-valuenow="{{ goal.progress_percentage }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+
+                            <!-- Comparação com o saldo -->
+                            <div class="alert alert-{% if goal.balance_comparison == 'positive' %}success{% else %}danger{% endif %}">
+                                <i class="fas fa-{% if goal.balance_comparison == 'positive' %}check-circle{% else %}exclamation-circle{% endif %} me-2"></i>
+                                Seu saldo atual é {% if goal.balance_comparison == 'positive' %}suficiente{% else %}insuficiente{% endif %} para esta meta
+                            </div>
+
+                            <!-- Feedback de meta -->
+                            {% if goal.is_completed %}
+                            <form method="POST" class="mt-3">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="goal_id" value="{{ goal.id }}">
+                                <p class="mb-2">Você atingiu esta meta! Conseguiu guardar o valor?</p>
+                                <div class="btn-group" role="group">
+                                    <button type="submit" name="goal_feedback" value="yes" class="btn btn-outline-success">
+                                        <i class="fas fa-thumbs-up"></i> Sim
+                                    </button>
+                                    <button type="submit" name="goal_feedback" value="no" class="btn btn-outline-danger">
+                                        <i class="fas fa-thumbs-down"></i> Não
+                                    </button>
+                                </div>
+                            </form>
+                            {% endif %}
+
+                            <!-- Ações -->
+                            <div class="d-flex justify-content-between mt-3">
+                                <a href="{{ url_for('add_to_goal_route', goal_id=goal.id) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Adicionar valor
+                                </a>
+                                <div>
+                                   
+                                    <a href="{{ url_for('delete_goal_route', goal_id=goal.id) }}" class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Tem certeza que deseja excluir esta meta?')">
+                                        <i class="fas fa-trash"></i> Excluir
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>Nenhuma meta cadastrada ainda. Crie sua primeira meta!
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Mostrar/ocultar formulário de nova meta
+function showGoalForm() {
+    document.getElementById('goalForm').style.display = 'block';
+    window.scrollTo({
+        top: document.getElementById('goalForm').offsetTop - 20,
+        behavior: 'smooth'
+    });
+}
+
+function hideGoalForm() {
+    document.getElementById('goalForm').style.display = 'none';
+}
+
+// Máscara para data
+document.getElementById('target_date').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2);
+    }
+    if (value.length > 5) {
+        value = value.substring(0, 5) + '/' + value.substring(5, 9);
+    }
+    e.target.value = value;
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Relatório Mensal - Gestor Financeiro{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h2 class="card-title mb-0">Relatório Mensal - {{ current_month }}</h2>
+            </div>
+            <div class="card-body">
+                <img src="{{ url_for('monthly_balance_chart') }}" alt="Gráfico de Balanço Mensal" class="img-fluid rounded">
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h3 class="card-title mb-0">Top Categorias</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="text-center text-success">Receitas</h4>
+                        <img src="{{ url_for('monthly_balance_chart') }}" alt="Gráfico de Top Receitas" class="img-fluid">
+                    </div>
+                    <div class="col-md-6">
+                        <h4 class="text-center text-danger">Despesas</h4>
+                        <img src="{{ url_for('monthly_balance_chart') }}" alt="Gráfico de Top Despesas" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h3 class="card-title mb-0">Resumo Financeiro</h3>
+            </div>
+            <div class="card-body">
+                <div class="summary-item mb-3 p-3 bg-light rounded">
+                    <h4 class="text-success">Receitas Totais</h4>
+                    <h2 class="text-success">R$ {{ "%.2f"|format(total_receitas) }}</h2>
+                </div>
+                
+                <div class="summary-item mb-3 p-3 bg-light rounded">
+                    <h4 class="text-danger">Despesas Totais</h4>
+                    <h2 class="text-danger">R$ {{ "%.2f"|format(total_despesas) }}</h2>
+                </div>
+                
+                <div class="summary-item p-3 bg-{% if saldo >= 0 %}success{% else %}danger{% endif %} rounded">
+                    <h4 class="text-white">Saldo Final</h4>
+                    <h2 class="text-white">R$ {{ "%.2f"|format(saldo) }}</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-light">
+                <h3 class="card-title mb-0">Sugestões Financeiras</h3>
+            </div>
+            <div class="card-body">
+                {% if saldo > 0 %}
+                                <div class="alert alert-success">
+                    <h4><i class="fas fa-check-circle me-2"></i>Saldo Positivo</h4>
+                    <p>Você está com saldo positivo este mês! Sugerimos:</p>
+                    <ul>
+                        <li>Investir 30% em renda fixa (CDB, Tesouro Direto)</li>
+                        <li>Alocar 20% para suas metas financeiras</li>
+                        <li>Guardar 10% para emergências</li>
+                    </ul>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <h4><i class="fas fa-exclamation-triangle me-2"></i>Saldo Negativo</h4>
+                    <p>Atenção: seu saldo está negativo. Recomendamos:</p>
+                    <ul>
+                        <li>Revisar despesas não essenciais</li>
+                        <li>Negociar dívidas existentes</li>
+                        <li>Criar um plano de redução de custos</li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

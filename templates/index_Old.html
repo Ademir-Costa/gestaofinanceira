@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Gestor Financeiro{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <!-- Cartões de Resumo -->
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 border-primary">
+            <div class="card-body text-center">
+                <h3 class="card-title text-primary">Saldo Atual</h3>
+                <h2 class="balance {% if balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    R$ {{ "%.2f"|format(balance) }}
+                </h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 border-success">
+            <div class="card-body text-center">
+                <h3 class="card-title text-success">Receitas</h3>
+                <h2 class="income text-success">R$ {{ "%.2f"|format(total_income) }}</h2>
+                <small class="text-muted">Este mês</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 border-danger">
+            <div class="card-body text-center">
+                <h3 class="card-title text-danger">Despesas</h3>
+                <h2 class="expense text-danger">R$ {{ "%.2f"|format(total_expense) }}</h2>
+                <small class="text-muted">Este mês</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h3 class="card-title mb-0">Balanço Mensal</h3>
+    </div>
+    <div class="card-body">
+        <img src="{{ url_for('monthly_balance_chart') }}" alt="Gráfico de Balanço Mensal" class="img-fluid">
+    </div>
+</div>
+
+<!-- Filtros e Transações -->
+<div class="card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h3 class="card-title mb-0">Últimas Transações</h3>
+        <div>
+            <a href="{{ url_for('add_entry_route') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus me-1"></i> Nova Transação
+            </a>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <div class="mb-3">
+            <form method="GET" class="row g-2">
+                <div class="col-md-3">
+                    <select name="type_filter" class="form-select">
+                        <option value="">Todos os Tipos</option>
+                        <option value="receita" {% if request.args.get('type_filter') == 'receita' %}selected{% endif %}>Receitas</option>
+                        <option value="despesa" {% if request.args.get('type_filter') == 'despesa' %}selected{% endif %}>Despesas</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="month" name="month_filter" class="form-control" 
+                           value="{{ request.args.get('month_filter') }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="category_filter" class="form-select">
+                        <option value="">Todas Categorias</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}" {% if request.args.get('category_filter') == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                </div>
+            </form>
+        </div>
+        
+        {% if entries %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                    <tr>
+                        <td>{{ entry[1] }}</td>
+                        <td>{{ entry[2] }}</td>
+                        <td>{{ entry[4] }}</td>
+                        <td class="{% if entry[4] == 'receita' %}text-success{% else %}text-danger{% endif %} fw-bold">
+                            R$ {{ "%.2f"|format(entry[3]) }}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('edit_entry_route', entry_id=entry[0]) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('delete_entry_route', entry_id=entry[0]) }}" 
+                                   class="btn btn-outline-danger"
+                                   onclick="return confirm('Tem certeza que deseja excluir esta transação?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i>Nenhuma transação encontrada. Adicione sua primeira transação!
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

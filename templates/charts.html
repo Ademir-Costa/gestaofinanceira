@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Gráficos Financeiros - Gestor Financeiro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-light">
+        <h1 class="card-title mb-0">Gráficos Financeiros</h1>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Top 5 Maiores Despesas</h3>
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ url_for('top_expenses_chart') }}" alt="Gráfico de Maiores Despesas" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Balanço Mensal</h3>
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ url_for('monthly_balance_chart') }}" alt="Gráfico de Balanço Mensal" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Evolução Anual</h3>
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ url_for('yearly_trend_chart') }}" alt="Gráfico de Evolução Anual" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Distribuição por Categoria</h3>
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ url_for('category_distribution_chart') }}" alt="Gráfico de Distribuição por Categoria" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
